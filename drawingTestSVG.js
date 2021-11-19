@@ -12,6 +12,10 @@ const refreshDelay = 7; // TIME INTERVAL FOR REFRESH UPDATES
 function resizeSVG(){
     // SETS THE SIZE OF THE SVG FRAME TO THE SIZE OF THE BROWSER WINDOW
     draw.size(window.innerWidth,window.innerHeight);
+    if (rectArray.length != 0){
+        rectArray[0][0].size(window.innerWidth,window.innerHeight)
+    }
+    
 }
 
 // ANIMATE INTERVAL FUNCITON DEFINED HERE
@@ -103,7 +107,7 @@ function drawLine(draw,startXPos,startYPos,endXPos,endYPos,widthLine,colourStr){
 // DRAWS PATH TO SCREEN
 // RETURNS TRUE IF PATH WAS DRAWN
 function drawPath(draw,pathArgument,pathFill,strokeData){
-    var path = draw.path(pathArgument).fill(pathFill).stroke(strokeData).move(xPos,yPos);
+    var path = draw.path(pathArgument).fill(pathFill).stroke(strokeData);
     pathArray.push(path);
     return true;
 }
@@ -126,13 +130,34 @@ function validateLine(startXPos,startYPos,endXPos,endYPos){
     }
 }
 
+// MOVING AN ELEMENT ALONG A PATH
+function movePath(element,path,length){
+    let n = 0;
+    return function anim(timestamp){
+        let point = path.pointAt(n);
+        element.move(point.x - (element.width()/2) ,point.y - (element.height()/2) );
+        n += 2;
+
+        if (!( (element.x() + (element.width()/2))==(path.pointAt(999999999).x) && (element.y() + (element.height()/2))==(path.pointAt(999999999).y) )){
+            requestAnimationFrame(anim);
+        } else {
+            n = 0;
+            requestAnimationFrame(anim);
+        }    
+    }
+}
+
 // MAIN FUNCTION CALLED HERE, WAITING FOR WINDOW TO FULLY LOAD TO
 window.onload = function(){
     // DEFINING OUR SVG WINDOW, CREATING GLOBAL DRAW. 
     draw = SVG().addTo('body').size(window.innerWidth,window.innerHeight);
 
+    // TEST CURVES
+    // M100 100 H200 C200 100 250 100 250 150 V 250
+    // 'M200 100 A50 50 0 0 1 200 200 A50 50 0 0 1 200 100' - CIRCLE RADIUS 50, CENTRE X=200 Y=150
     // DEFINING TEST VARIABLES HERE
-    path = 'M200 100 A50 50 0 0 1 200 200 A50 50 0 0 1 200 100';
+    pathOne = 'M100 100 H200 A50 50 0 0 1 250 150 V 250';
+    pathTwo = 'M500 500 V800 C 550 800 625 720 700 500 V500';
 
     // LISTENING FOR A RESIZE OF THE WINDOW 
     window.addEventListener('resize', resizeSVG, false); //ADDS EVENT LISTENER FOR THE RESIZING OF THE WINDOW
@@ -145,14 +170,28 @@ window.onload = function(){
     //console.log(drawLine(draw,150,150,450,450,5,"f06"));
     //console.log(drawRectangle(draw,window.innerWidth,window.innerHeight,100,50,"f06"));
     //console.log(drawCircle(draw,450,500,35,"f13d4a"));
-    console.log(drawPath(draw, path,'none',{color:'#f06',width:4, linecap:'round',linejoin:'round'}));
 
-    // TEST CURVES
-    // M100 100 H200 C200 100 250 100 250 150 V 250
-    // 'M200 100 A50 50 0 0 1 200 200 A50 50 0 0 1 200 100' - CIRCLE RADIUS 50, CENTRE X=200 Y=150
+    // TESTING A RECTANGE FOLLOWING A PATH
+    console.log(drawPath(draw, pathOne,'none',{color:'#f06',width:4, linecap:'round',linejoin:'round'})); // DRAWING PATH 
+    console.log(drawRectangle(draw, 500,500,50,50,"e02",[0,0]));
+
+    console.log(drawPath(draw,pathTwo,'none',{color:'#f06',width:4, linecap:'round',linejoin:'round'}));
+    console.log(drawCircle(draw,50,50,50,"e02"));
 
     // ANIMATION
-    animate();
+    //animate();
+
+    var rectOne = rectArray[1][0];
+    var pathOne = pathArray[0];
+
+    var circleOne = circleArray[0];
+    var pathTwo = pathArray[1];
+
+
+    
+
+    requestAnimationFrame(movePath(rectOne,pathOne,pathOne.length()));
+    requestAnimationFrame(movePath(circleOne,pathTwo,pathTwo.length()));
 }
 
 
