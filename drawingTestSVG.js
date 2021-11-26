@@ -187,9 +187,6 @@ window.onload = function(){
     var circleOne = circleArray[0];
     var pathTwo = pathArray[1];
 
-
-    
-
     requestAnimationFrame(movePath(rectOne,pathOne,pathOne.length()));
     requestAnimationFrame(movePath(circleOne,pathTwo,pathTwo.length()));
 }
